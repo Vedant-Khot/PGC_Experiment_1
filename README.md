@@ -22,7 +22,7 @@ flowchart LR
         M1["Sequential CPU Baseline — 244.12s (1.00x)"]
         M2["OpenMP Shared Memory — 30.83s (7.92x)"]
         M3["MPI Distributed Memory — 92.98s (2.63x)"]
-        M4["CUDA GPU Parallel Acceleration — 0.165s (1479.48x)"]
+        M4["CUDA GPU Parallel Acceleration — 0.211s (1155.63x)"]
     end
 
     subgraph Output ["3. Deterministic Output"]
@@ -34,7 +34,7 @@ flowchart LR
 
 ### Key Finding
 
-> **CUDA GPU acceleration achieved an overall execution time of 0.165 seconds (0.146s kernel execution) — representing a 1,479.48× speedup over single-threaded sequential CPU execution (244.12s) and a 186.85× speedup over 8-thread OpenMP shared-memory execution (30.83s).**
+> **CUDA GPU acceleration achieved a kernel execution time of 0.211245 seconds — representing a 1,155.63× speedup over single-threaded sequential CPU execution (244.12s) and a 145.95× speedup over 8-thread OpenMP shared-memory execution (30.83s).**
 
 ---
 
@@ -78,7 +78,7 @@ flowchart TD
     Seq --> Res1["Execution Time: 244.12s<br/>Speedup: 1.00x"]
     OMP --> Res2["Execution Time: 30.83s<br/>Speedup: 7.92x"]
     MPI --> Res3["Execution Time: 92.98s<br/>Speedup: 2.63x"]
-    CUDA --> Res4["Execution Time: 0.165s<br/>Speedup: 1479.48x"]
+    CUDA --> Res4["Execution Time: 0.211s<br/>Speedup: 1155.63x"]
 ```
 
 ### Architectural Breakdown
@@ -97,6 +97,7 @@ MPI operates across disjoint memory address spaces over a virtual network connec
 
 #### 4. CUDA (Massively Parallel SIMT)
 CUDA offloads computation from host CPU memory to device GPU memory via PCIe bus. The computation is structured into a 2D execution grid:
+- **GPU Hardware**: NVIDIA GeForce RTX 5060 Ti (16 GB VRAM, Driver 617.14, CUDA 13.4)
 - **Grid Configuration**: $250 \times 250 = 62,500$ blocks
 - **Block Configuration**: $16 \times 16 = 256$ threads/block
 - **Total Logical GPU Threads**: $16,000,000$ threads running concurrently.
@@ -165,6 +166,28 @@ Distributed calculation across 4 VM ranks computing 1000 rows each. Execution ti
 
 ---
 
+### 5.6 CUDA GPU Hardware & Environment Verification
+Verification of host GPU hardware specifications via `nvidia-smi` and compiler environment via `nvcc --version`:
+- **GPU Hardware**: NVIDIA GeForce RTX 5060 Ti (16,311 MiB / 16 GB VRAM, Driver Version 617.14)
+- **CUDA Toolkit**: Release 13.4, V13.4.92
+
+![CUDA Environment and GPU Verification](images/cuda_environment.png)
+
+---
+
+### 5.7 CUDA GPU Parallel Matrix Multiplication Execution
+Compilation via `nvcc -O2 matrix_cuda.cu -o matrix_cuda` and execution of `matrix_cuda.exe` on the $4000 \times 4000$ matrix multiplication workload:
+- **Matrix Dimension**: $4000 \times 4000$
+- **Block Configuration**: $16 \times 16$ threads per block (256 threads/block)
+- **Grid Configuration**: $250 \times 250$ blocks ($62,500$ blocks)
+- **Total Concurrent GPU Threads**: $16,000,000$ threads
+- **Verification Output**: $C[0][0] = 4000.00$
+- **Kernel Execution Time**: **0.211245 seconds**
+
+![CUDA Matrix Multiplication Execution Result](images/cuda_result.png)
+
+---
+
 ## 6. Performance Comparison & Visualizations
 
 ### 6.1 Performance Comparison Table
@@ -174,7 +197,7 @@ Distributed calculation across 4 VM ranks computing 1000 rows each. Execution ti
 | **Sequential** | Single CPU Core | 1 CPU Thread | `244.120000` | **1.00×** | `4000.00` |
 | **OpenMP** | Shared-Memory Multi-core | 8 CPU Threads | `30.830434` | **7.92×** | `4000.00` |
 | **MPI** | Distributed 4-VM Cluster | 4 Process Ranks | `92.979510` | **2.63×** | `4000.00` |
-| **CUDA** | Massively Parallel GPU | NVIDIA RTX 4500 Ada | `0.165004` | **1479.48×** | `4000.00` |
+| **CUDA** | Massively Parallel GPU | NVIDIA GeForce RTX 5060 Ti | `0.211245` | **1155.63×** | `4000.00` |
 
 ### 6.2 Empirical Performance Charts
 
@@ -200,7 +223,7 @@ $$\text{Efficiency} = \frac{\text{Speedup}}{P} \times 100\%$$
 1. **Sequential CPU Baseline**: Serves as the computational baseline ($244.12\text{s}$). Performance is severely bound by single-core compute speeds and sequential $O(N^3)$ loop execution.
 2. **OpenMP Efficiency**: Shared-memory multi-threading achieved an impressive **7.92× speedup** on 8 CPU threads ($\sim 99\%$ parallel efficiency). Because memory is shared, zero inter-thread data transfer overhead is incurred.
 3. **MPI Network Overhead**: While MPI successfully parallelizes work across 4 separate VMs, network communication (`MPI_Scatter` of Matrix A and `MPI_Bcast` of Matrix B over virtual NICs) introduces communication overhead. Thus, speedup is $2.63\times$ compared to OpenMP's $7.92\times$.
-4. **CUDA GPU Dominance**: CUDA achieves an extraordinary **1,479.48× speedup**. Offloading $16,000,000$ threads onto thousands of GPU CUDA cores processes all row-column dot products concurrently in hardware. The kernel execution itself completes in just **0.146 seconds**.
+4. **CUDA GPU Dominance**: CUDA achieves an extraordinary **1,155.63× speedup**. Offloading $16,000,000$ threads onto the NVIDIA GeForce RTX 5060 Ti CUDA cores processes all row-column dot products concurrently in hardware. The kernel execution itself completes in just **0.211245 seconds**.
 
 ---
 

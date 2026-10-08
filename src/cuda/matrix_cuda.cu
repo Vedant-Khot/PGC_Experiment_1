@@ -84,13 +84,11 @@ int main()
     cudaEventElapsedTime(&kernelTime, kernelStart, kernelStop);
     cudaEventElapsedTime(&totalTime, totalStart, totalStop);
 
-    printf("CUDA Matrix Multiplication Completed\n");
-    printf("Matrix Size = %d x %d\n", N, N);
-    printf("Grid Size = %d x %d blocks\n", grid.x, grid.y);
-    printf("Block Size = %d x %d threads\n", block.x, block.y);
-    printf("Kernel Execution Time = %.6f seconds\n", kernelTime / 1000.0f);
-    printf("Total CUDA Phase Time = %.6f seconds\n", totalTime / 1000.0f);
-    printf("Verification C[0][0] = %.2f\n", h_C[0]);
+    printf("Matrix size: %d x %d\n", N, N);
+    printf("Block size: %d x %d\n", block.x, block.y);
+    printf("Grid size: %d x %d\n", grid.x, grid.y);
+    printf("C[0][0] = %.2f\n", h_C[0]);
+    printf("Kernel time: %.6f seconds\n", kernelTime / 1000.0f);
 
     cudaFree(d_A);
     cudaFree(d_B);
