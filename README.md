@@ -223,7 +223,7 @@ $$\text{Efficiency} = \frac{\text{Speedup}}{P} \times 100\%$$
 1. **Sequential CPU Baseline**: Serves as the computational baseline ($244.12\text{s}$). Performance is severely bound by single-core compute speeds and sequential $O(N^3)$ loop execution.
 2. **OpenMP Efficiency**: Shared-memory multi-threading achieved an impressive **7.92× speedup** on 8 CPU threads ($\sim 99\%$ parallel efficiency). Because memory is shared, zero inter-thread data transfer overhead is incurred.
 3. **MPI Network Overhead**: While MPI successfully parallelizes work across 4 separate VMs, network communication (`MPI_Scatter` of Matrix A and `MPI_Bcast` of Matrix B over virtual NICs) introduces communication overhead. Thus, speedup is $2.63\times$ compared to OpenMP's $7.92\times$.
-4. **CUDA GPU Dominance**: CUDA achieves an extraordinary **1,155.63× speedup**. Offloading $16,000,000$ threads onto the NVIDIA GeForce RTX 5060 Ti CUDA cores processes all row-column dot products concurrently in hardware. The kernel execution itself completes in just **0.211245 seconds**.
+4. **CUDA GPU Dominance**: CUDA achieves an extraordinary **1,155.63× speedup**. Offloading $16,000,000$ threads onto the NVIDIA GeForce RTX 5060 Ti CUDA cores processes all row-column dot products concurrently in hardware. The kernel execution itself completes in just  **0.211245 seconds**.
 
 ---
 
